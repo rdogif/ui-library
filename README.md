@@ -21,9 +21,9 @@ npm run preview
 
 ## The experience
 
-- All 19 supplied original JPEGs, unmodified, in `public/frames/` (1280 × 720).
-- Predecoded, time-based autoplay of frames 1–6. The title appears after frame 6 is drawn.
-- Native scrolling through a sticky hero maps progress to frames 6–19 and reverses without replaying the opening. No wheel interception.
+- All 98 supplied replacement JPEGs, unmodified, in `public/frames/` (1280 × 720). The original 19-frame set is preserved in `source-frames/original-19/`.
+- Predecoded, time-based autoplay of frames 1–27 over 550ms. The title appears after frame 27 is drawn (the exact image previously held at frame 6).
+- Native scrolling through a sticky hero maps progress to frames 27–98 and reverses without replaying the opening. No wheel interception.
 - Reduced motion skips autoplay and the long pinned section; all navigation and controls remain available.
 - Six real experiments: ASCII Ripple, Liquid Magnet, Magnetic Dock, Text Scramble, Morphing Toggle, Command Menu.
 - Search, category filtering, theme switch, hash-based documentation routes, adjustable playgrounds, code tabs, and clipboard export.
@@ -69,7 +69,7 @@ npm run test:browser
 npm run test:touch
 ```
 
-The browser suite checks autoplay, exact frame 6, forward/reverse scrolling, search and filters, live parameter/code changes, clipboard export, standalone examples, ripple movement, magnetic motion, keyboard commands and switches, mobile overflow, reduced motion, and direct-route reloads. Screenshots go to `test-results/` by default. Set `TEST_URL` for another serving URL and `SCREENSHOT_DIR` to select an artifact directory.
+The browser suite checks autoplay, exact frame 27, forward/reverse scrolling, search and filters, live parameter/code changes, clipboard export, standalone examples, ripple movement, magnetic motion, keyboard commands and switches, mobile overflow, reduced motion, and direct-route reloads. Screenshots go to `test-results/` by default. Set `TEST_URL` for another serving URL and `SCREENSHOT_DIR` to select an artifact directory.
 
 `src/animations/hero-sequence.js` owns hero lifecycle. Component mount functions return cleanup callbacks that release their animation frames, observers, and attached elements. No runtime packages are shipped. Canvas content is decorative; accessible native controls provide interaction elsewhere. No telemetry or third-party assets are loaded.
 

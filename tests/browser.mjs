@@ -5,17 +5,17 @@ const screenshots=process.env.SCREENSHOT_DIR||'test-results';await fs.mkdir(scre
 const page=await browser.newPage({viewport:{width:1440,height:1000}});
 page.setDefaultTimeout(10000);page.setDefaultNavigationTimeout(10000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
 await page.goto(process.env.TEST_URL||'http://127.0.0.1:5173/ui-library/');
-await page.waitForFunction(()=>document.querySelector('#sequence').dataset.frame==='6'&&document.querySelector('.hero').classList.contains('ready'));
-assert.equal(await page.locator('#sequence').getAttribute('data-frame'),'6');
+await page.waitForFunction(()=>document.querySelector('#sequence').dataset.frame==='27'&&document.querySelector('.hero').classList.contains('ready'));
+assert.equal(await page.locator('#sequence').getAttribute('data-frame'),'27');
 await page.waitForTimeout(800);
 await page.screenshot({path:screenshots+'/rdoui-desktop.png',fullPage:false});
 const travel=await page.locator('.sequence').evaluate(e=>e.offsetHeight-innerHeight);
 await page.evaluate(y=>scrollTo({top:y,behavior:'instant'}),travel);
-await page.waitForFunction(()=>document.querySelector('#sequence').dataset.frame==='19');
+await page.waitForFunction(()=>document.querySelector('#sequence').dataset.frame==='98');
 await page.evaluate(y=>scrollTo({top:y,behavior:'instant'}),travel/2);
-await page.waitForFunction(()=>document.querySelector('#sequence').dataset.frame==='13');
+await page.waitForFunction(()=>document.querySelector('#sequence').dataset.frame==='63');
 await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
-await page.waitForFunction(()=>document.querySelector('#sequence').dataset.frame==='6');
+await page.waitForFunction(()=>document.querySelector('#sequence').dataset.frame==='27');
 await page.evaluate(()=>scrollTo({top:document.querySelector('#collection').offsetTop-75,behavior:'instant'}));await page.waitForTimeout(200);
 await page.screenshot({path:screenshots+'/rdoui-collection.png',fullPage:false});
 console.log('scroll passed');await page.getByRole('button',{name:'Typography',exact:true}).click();assert.equal(await page.locator('.card').count(),1);
@@ -35,9 +35,9 @@ await page.getByRole('button',{name:'Copy complete example'}).click();const asci
 console.log('next component');await page.getByRole('button',{name:'Close component'}).click();await page.locator('a[href="#/component/command-menu"]').click();const command=page.locator('#detail-preview [role=combobox]');await command.fill('source');assert.equal(await page.locator('#detail-preview [role=option]').count(),1);await command.press('Enter');assert.match(await page.locator('#detail-preview .command-footer').textContent(),/View source/);
 console.log('next component');await page.getByRole('button',{name:'Close component'}).click();await page.locator('a[href="#/component/morphing-toggle"]').click();const toggle=page.locator('#detail-preview [role=switch]');await toggle.focus();await page.keyboard.press('Space');assert.equal(await toggle.getAttribute('aria-checked'),'true');
 await page.setViewportSize({width:390,height:844});console.log('next component');await page.getByRole('button',{name:'Close component'}).click();await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));await page.waitForTimeout(400);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.locator('#toast').evaluate(e=>e.classList.remove('show'));await page.screenshot({path:screenshots+'/rdoui-mobile.png'});
-await page.emulateMedia({reducedMotion:'reduce'});await page.reload();await page.waitForFunction(()=>document.querySelector('.hero').classList.contains('ready'));assert.equal(await page.locator('#sequence').getAttribute('data-frame'),'6');
+await page.emulateMedia({reducedMotion:'reduce'});await page.reload();await page.waitForFunction(()=>document.querySelector('.hero').classList.contains('ready'));assert.equal(await page.locator('#sequence').getAttribute('data-frame'),'27');
 await page.locator('a[href="#/component/ascii-ripple"]').click();await page.getByRole('tab',{name:'JavaScript'}).click();assert.match(await page.locator('#code-view').textContent(),/const mount/);await page.reload();await page.waitForFunction(()=>document.querySelector('#detail').open);
-assert.deepEqual(errors,[]);console.log('PASS: autoplay, exact frame 6, forward/reverse scroll, filters, search, live code, standalone exports, ripple, magnet, command keyboard, toggle, mobile overflow, reduced motion, direct-route reload.');
+assert.deepEqual(errors,[]);console.log('PASS: autoplay, exact frame 27, forward/reverse scroll, filters, search, live code, standalone exports, ripple, magnet, command keyboard, toggle, mobile overflow, reduced motion, direct-route reload.');
 await browser.close();
 
 
