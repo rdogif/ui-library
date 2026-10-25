@@ -33,19 +33,35 @@ export function asciiRipple(root, options = {}) {
 }
 
 export function liquidMagnet(root, options = {}) {
-  const o={strength:.28,radius:180,size:190,borderRadius:60,opacity:.15,blur:12,highlight:.8,stiffness:135,damping:17,...options};
-  root.innerHTML='<div class="liquid-orbit"><span class="orbit-label">GET A LITTLE CLOSER</span><button class="liquid-button"><span>Explore the unusual</span><b>↗</b></button><span class="orbit-coordinate">MAGNETIC FIELD / ACTIVE</span></div>';
-  const button=root.querySelector('button'),reduced=matchMedia('(prefers-reduced-motion: reduce)');
+  const o={strength:.95,radius:180,size:190,borderRadius:60,opacity:.15,blur:12,highlight:.8,stiffness:180,damping:22,...options};
+  root.innerHTML='<div class="liquid-orbit"><span class="orbit-label">COME CLOSER. IT WILL FOLLOW.</span><button class="liquid-button"><span>Explore the unusual</span><b>↗</b></button><span class="orbit-coordinate">LIQUID ATTRACTION / READY</span></div>';
+  const button=root.querySelector('button'),status=root.querySelector('.orbit-coordinate'),reduced=matchMedia('(prefers-reduced-motion: reduce)');
   button.style.cssText=`width:${o.size}px;border-radius:${o.borderRadius}px;--glass:${o.opacity};--blur:${o.blur}px;--shine:${o.highlight}`;
-  let x=0,y=0,vx=0,vy=0,tx=0,ty=0,last=0,raf=0,rect;
-  const resize=new ResizeObserver(()=>{const r=root.getBoundingClientRect();rect={x:r.left+r.width/2,y:r.top+r.height/2}});resize.observe(root);
-  function tick(t){raf=0;const dt=Math.min((t-(last||t))/1000,.025);last=t;vx+=((tx-x)*o.stiffness-vx*o.damping)*dt;vy+=((ty-y)*o.stiffness-vy*o.damping)*dt;x+=vx*dt;y+=vy*dt;button.style.transform=`translate(${x}px,${y}px) rotate(${x*.035}deg) scale(${1+Math.min(.035,Math.abs(vx)*.0001)},${1-Math.min(.02,Math.abs(vy)*.0001)})`;if(Math.abs(tx-x)+Math.abs(ty-y)+Math.abs(vx)+Math.abs(vy)>.03)raf=requestAnimationFrame(tick);else last=0;}
+  let x=0,y=0,vx=0,vy=0,tx=0,ty=0,last=0,raf=0,attached=false;
+  function tick(t){
+    raf=0;const elapsed=Math.min((t-(last||t))/1000,.1);last=t;const steps=Math.max(1,Math.ceil(elapsed*120)),dt=elapsed/steps;
+    for(let i=0;i<steps;i++){vx+=((tx-x)*o.stiffness-vx*o.damping)*dt;vy+=((ty-y)*o.stiffness-vy*o.damping)*dt;x+=vx*dt;y+=vy*dt;}
+    const stretch=Math.min(.12,Math.hypot(vx,vy)*.0003),angle=Math.atan2(vy,vx)*180/Math.PI;
+    button.style.transform=`translate(${x}px,${y}px) rotate(${angle}deg) scale(${1+stretch},${1-stretch*.6}) rotate(${-angle}deg)`;
+    button.style.setProperty('--cling',attached?'1':'0');
+    if(Math.abs(tx-x)+Math.abs(ty-y)+Math.abs(vx)+Math.abs(vy)>.03)raf=requestAnimationFrame(tick);else last=0;
+  }
   const wake=()=>{if(!raf)raf=requestAnimationFrame(tick)};
-  function move(e){if(e.pointerType==='touch'||reduced.matches)return;const r=root.getBoundingClientRect();rect={x:r.left+r.width/2,y:r.top+r.height/2};const dx=e.clientX-rect.x,dy=e.clientY-rect.y,d=Math.hypot(dx,dy),pull=Math.max(0,1-d/o.radius);tx=Math.max(-32,Math.min(32,dx*o.strength*pull));ty=Math.max(-24,Math.min(24,dy*o.strength*pull));button.style.setProperty('--light-x',`${50+dx/o.radius*40}%`);button.style.setProperty('--light-y',`${50+dy/o.radius*40}%`);wake()}
-  const leave=()=>{tx=ty=0;wake()};
+  function move(e){
+    if(e.pointerType==='touch'||reduced.matches||button.matches(':focus-visible'))return;
+    const r=root.getBoundingClientRect(),cx=button.offsetLeft+button.offsetWidth/2,cy=button.offsetTop+button.offsetHeight/2;
+    const dx=e.clientX-r.left-cx,dy=e.clientY-r.top-cy,d=Math.hypot(dx,dy);
+    attached=d<o.radius||(attached&&d<o.radius*1.6);
+    const maxX=Math.max(0,(r.width-button.offsetWidth)/2-14),maxY=Math.max(0,(r.height-button.offsetHeight)/2-20);
+    tx=attached?Math.max(-maxX,Math.min(maxX,dx*o.strength)):0;ty=attached?Math.max(-maxY,Math.min(maxY,dy*o.strength)):0;
+    button.style.setProperty('--light-x',`${50+(dx-x)/o.size*100}%`);button.style.setProperty('--light-y',`${50+(dy-y)/62*100}%`);
+    status.textContent=attached?'LIQUID ATTRACTION / ATTACHED':'LIQUID ATTRACTION / READY';wake();
+  }
+  const leave=()=>{attached=false;tx=ty=0;status.textContent='LIQUID ATTRACTION / READY';wake()};
+  button.addEventListener('focus',leave);const resize=new ResizeObserver(leave);resize.observe(root);
   const click=()=>{button.querySelector('span').textContent='Curiosity looks good.';button.classList.add('activated')};button.addEventListener('click',click);
-  root.addEventListener('pointermove',move);root.addEventListener('pointerleave',leave);
-  return ()=>{cancelAnimationFrame(raf);resize.disconnect();root.removeEventListener('pointermove',move);root.removeEventListener('pointerleave',leave);root.replaceChildren()};
+  root.addEventListener('pointermove',move);root.addEventListener('pointerleave',leave);reduced.addEventListener('change',leave);
+  return ()=>{cancelAnimationFrame(raf);resize.disconnect();reduced.removeEventListener('change',leave);root.removeEventListener('pointermove',move);root.removeEventListener('pointerleave',leave);root.replaceChildren()};
 }
 
 export function magneticDock(root, options={}) {
@@ -80,11 +96,25 @@ export function morphToggle(root, options={}) {
 
 export function commandMenu(root, options={}) {
   const o={width:320,...options};
-  root.innerHTML='<div class="command" style="width:'+o.width+'px"><div class="command-input"><span>⌕</span><input placeholder="Where to next?" aria-label="Search commands" role="combobox" aria-expanded="true" aria-autocomplete="list"><kbd>↓↑</kbd></div><div class="command-results" role="listbox" aria-label="Commands"></div><div class="command-footer">NAVIGATE WITH ↑ ↓ <span>↵ SELECT</span></div></div>';
-  const input=root.querySelector('input'),list=root.querySelector('[role=listbox]'),items=['Explore components','View source on GitHub','Toggle creative mode','Back to the beginning'];let filtered=items,index=0,selected='';const uid='cmd-'+Math.random().toString(36).slice(2);
-  function render(){list.replaceChildren();filtered.forEach((label,i)=>{const b=document.createElement('div');b.id=uid+i;b.setAttribute('role','option');b.setAttribute('aria-selected',String(i===index));b.textContent=label;b.addEventListener('pointerdown',e=>e.preventDefault());b.onclick=()=>choose(i);list.append(b)});if(!filtered.length){const p=document.createElement('p');p.textContent='No matching commands';list.append(p);input.removeAttribute('aria-activedescendant')}else input.setAttribute('aria-activedescendant',uid+index)}
-  function choose(i){selected=filtered[i];root.querySelector('.command-footer').textContent='✓ '+selected;input.value='';filtered=items;index=0;render();root.dispatchEvent(new CustomEvent('command',{detail:selected,bubbles:true}))}
-  input.oninput=()=>{filtered=items.filter(x=>x.toLowerCase().includes(input.value.toLowerCase()));index=0;render()};input.onkeydown=e=>{if(['ArrowDown','ArrowUp','Enter','Escape'].includes(e.key)){e.preventDefault();e.stopPropagation();if(e.key==='Escape'){input.value='';filtered=items;index=0}else if(e.key==='Enter'&&filtered.length)choose(index);else if(filtered.length)index=(index+(e.key==='ArrowDown'?1:filtered.length-1))%filtered.length;render()}};render();
-  return ()=>root.replaceChildren();
+  root.innerHTML='<div class="command" style="width:'+o.width+'px"><div class="command-input"><span>⌕</span><input placeholder="Where to next?" aria-label="Search commands" role="combobox" aria-expanded="true" aria-autocomplete="list"><kbd>↓↑</kbd></div><div class="command-results" role="listbox" aria-label="Commands"><div class="command-selection" aria-hidden="true"></div></div><div class="command-footer">NAVIGATE WITH ↑ ↓ <span>↵ SELECT</span></div></div>';
+  const panel=root.querySelector('.command'),input=root.querySelector('input'),list=root.querySelector('[role=listbox]'),selection=root.querySelector('.command-selection'),items=['Explore components','View source on GitHub','Toggle creative mode','Back to the beginning'],reduced=matchMedia('(prefers-reduced-motion: reduce)');
+  let filtered=items,index=0,y=7,target=7,velocity=0,raf=0,last=0;const uid='cmd-'+Math.random().toString(36).slice(2);
+  function tick(t){raf=0;const elapsed=Math.min((t-(last||t))/1000,.1);last=t;const steps=Math.max(1,Math.ceil(elapsed*120)),dt=elapsed/steps;for(let i=0;i<steps;i++){velocity+=((target-y)*230-velocity*27)*dt;y+=velocity*dt;}selection.style.transform=`translateY(${y}px)`;if(Math.abs(target-y)+Math.abs(velocity)>.03)raf=requestAnimationFrame(tick);else last=0}
+  function highlight(){
+    [...list.querySelectorAll('[role=option]')].forEach((el,i)=>el.setAttribute('aria-selected',String(i===index)));
+    target=7+index*38;selection.style.opacity=filtered.length?'1':'0';
+    if(filtered.length)input.setAttribute('aria-activedescendant',uid+index);else input.removeAttribute('aria-activedescendant');
+    if(reduced.matches){y=target;selection.style.transform=`translateY(${y}px)`}else if(!raf)raf=requestAnimationFrame(tick);
+  }
+  function render(){
+    list.querySelectorAll('[role=option],p').forEach(el=>el.remove());
+    filtered.forEach((label,i)=>{const b=document.createElement('div');b.id=uid+i;b.setAttribute('role','option');b.textContent=label;b.style.setProperty('--row',i);b.addEventListener('pointerdown',e=>e.preventDefault());b.onpointerenter=()=>{index=i;highlight()};b.onclick=()=>choose(i);list.append(b)});
+    if(!filtered.length){const p=document.createElement('p');p.textContent='No matching commands';list.append(p)}
+    list.style.height=`${Math.max(1,filtered.length)*38+14}px`;highlight();
+  }
+  function choose(i){const selected=filtered[i];root.querySelector('.command-footer').textContent='✓ '+selected;input.value='';filtered=items;index=0;render();root.dispatchEvent(new CustomEvent('command',{detail:selected,bubbles:true}))}
+  input.oninput=()=>{filtered=items.filter(x=>x.toLowerCase().includes(input.value.toLowerCase()));index=0;render()};
+  input.onkeydown=e=>{if(['ArrowDown','ArrowUp','Enter','Escape'].includes(e.key)){e.preventDefault();e.stopPropagation();if(e.key==='Escape'){input.value='';filtered=items;index=0;render()}else if(e.key==='Enter'&&filtered.length)choose(index);else if(filtered.length){index=(index+(e.key==='ArrowDown'?1:filtered.length-1))%filtered.length;highlight()}}};
+  panel.onpointermove=e=>{const r=panel.getBoundingClientRect();panel.style.setProperty('--glow-x',`${e.clientX-r.left}px`);panel.style.setProperty('--glow-y',`${e.clientY-r.top}px`)};render();
+  return ()=>{cancelAnimationFrame(raf);root.replaceChildren()};
 }
-

@@ -2,7 +2,7 @@ export const frameAtProgress = progress => 6 + Math.round(Math.max(0, Math.min(1
 export async function heroSequence() {
   const region = document.querySelector('.sequence'), hero = region.querySelector('.hero');
   const canvas = document.querySelector('#sequence'), ctx = canvas.getContext('2d');
-  const counter = document.querySelector('#frame-counter'), reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   let images = [], current = 1, ready = false, raf = 0, destroyed = false, start;
   const progress = () => Math.max(0, Math.min(1, -region.getBoundingClientRect().top / Math.max(1, region.offsetHeight - hero.offsetHeight)));
   function draw(n) {
@@ -13,7 +13,7 @@ export async function heroSequence() {
     ctx.setTransform(dpr,0,0,dpr,0,0);
     const scale = Math.max(w/img.naturalWidth,h/img.naturalHeight);
     ctx.drawImage(img,(w-img.naturalWidth*scale)/2,(h-img.naturalHeight*scale)/2,img.naturalWidth*scale,img.naturalHeight*scale);
-    canvas.dataset.frame=n;counter.textContent=`SEQUENCE / ${String(n).padStart(2,'0')} — 19`;
+    canvas.dataset.frame=n;
     document.querySelector('.progress i').style.width=`${(n-1)/18*100}%`;
   }
   function sync(){ raf=0;if(!ready)return;const p=reduced.matches?0:progress();draw(frameAtProgress(p));hero.querySelector('.hero-copy').style.opacity=String(Math.max(0,1-p*1.65)); }

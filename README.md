@@ -47,7 +47,7 @@ const cleanup = asciiRipple(document.querySelector('.experiment'), {
 });
 ```
 
-Liquid Magnet includes classic, soft capsule, and dense glass presets. Its lighting and layered reflections use broadly supported CSS, with a translucent surface when backdrop-filter is unavailable. Displacement is capped at 32px horizontally and 24px vertically. Touch and reduced motion use a stationary native button.
+Liquid Magnet includes classic, soft capsule, and dense glass presets. Its lighting and layered reflections use broadly supported CSS, with a translucent surface when backdrop-filter is unavailable. The surface attaches to the nearby cursor with a damped spring, deforms with velocity, and stays bounded inside its container. It releases and springs home when the pointer leaves. Touch and reduced motion use a stationary native button.
 
 The command menu emits a bubbling `command` CustomEvent with the selected label in `event.detail`. Connect it to your application's navigation or actions. Dock selections expose `aria-pressed`; the toggle exposes `aria-checked`. These demo controls change local state and do not require a backend.
 
