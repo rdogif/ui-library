@@ -1,0 +1,9 @@
+import { chromium } from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch();
+const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+await page.goto(process.env.TEST_URL||'http://127.0.0.1:4173/ui-library/');await page.waitForFunction(()=>document.querySelector('.hero').classList.contains('ready'));
+await page.locator('a[href="#/component/ascii-ripple"]').tap();const canvas=page.locator('#detail-preview canvas');await canvas.waitFor();const r=await canvas.boundingBox();const before=await canvas.evaluate(e=>e.toDataURL());const session=await context.newCDPSession(page);
+await session.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:r.x+40,y:r.y+100}]});for(let i=1;i<=8;i++){await session.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:r.x+40+i*20,y:r.y+100+i*5}]});await page.waitForTimeout(20)}await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});assert.notEqual(await canvas.evaluate(e=>e.toDataURL()),before);
+await page.getByRole('button',{name:'Close component'}).tap();await page.locator('a[href="#/component/liquid-magnet"]').tap();const button=page.locator('#detail-preview .liquid-button');await button.tap();assert.match(await button.innerText(),/Curiosity/);
+await page.getByRole('button',{name:'Close component'}).tap();await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));await page.setViewportSize({width:844,height:390});await page.waitForTimeout(200);assert.ok(await page.locator('#sequence').evaluate(e=>e.width>0&&e.height>0));assert.equal(await page.locator('#sequence').getAttribute('data-frame'),'6');assert.deepEqual(errors,[]);console.log('PASS: real touch drag ripples, touch button activation, landscape resize, no browser errors.');await browser.close();
